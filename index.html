@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashback - Ностальгия в жестах</title>
+    <meta name="theme-color" content="#8B0000">
+    <meta name="description" content="Просмотр фото через уникальные диагональные жесты">
+    
+    <!-- PWA мета-теги -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📸</text></svg>">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Flashback">
+    
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body { 
+            background: #000; 
+            color: #fff; 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .app-container {
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #8B0000;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+        
+        .photo-preview {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #8B0000, #600000);
+            border-radius: 20px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 10px 30px rgba(139, 0, 0, 0.3);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .feature {
+            background: rgba(139, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+        
+        .install-btn {
+            background: #8B0000;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 20px 0;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        
+        .install-btn:hover {
+            background: #600000;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .gesture-demo {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            font-size: 24px;
+        }
+        
+        .demo-item {
+            text-align: center;
+        }
+        
+        .demo-icon {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+        
+        .demo-text {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="logo">📸</div>
+        <h1>Flashback</h1>
+        <div class="subtitle">Ностальгия в жестах</div>
+        
+        <div class="photo-preview">
+            Ваши фото здесь
+        </div>
+        
+        <div class="gesture-demo">
+            <div class="demo-item">
+                <div class="demo-icon">↗️</div>
+                <div class="demo-text">Вперёд</div>
+            </div>
+            <div class="demo-item">
+                <div class="demo-icon">↙️</div>
+                <div class="demo-text">Назад</div>
+            </div>
+            <div class="demo-item">
+                <div class="demo-icon">👆👆</div>
+                <div class="demo-text">Лайк</div>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature">📱 Установка на телефон</div>
+            <div class="feature">🎮 Управление жестами</div>
+            <div class="feature">❤️ Система избранного</div>
+            <div class="feature">🔍 Умный поиск</div>
+        </div>
+        
+        <button class="install-btn" onclick="installApp()">
+            📲 Установить приложение
+        </button>
+        
+        <div class="instructions">
+            Нажмите "Установить" или выберите в меню браузера<br>
+            "Добавить на главный экран"
+        </div>
+    </div>
+
+    <script>
+        // Регистрация Service Worker для PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/fb-webg/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker зарегистрирован');
+                    })
+                    .catch(function(error) {
+                        console.log('Ошибка ServiceWorker:', error);
+                    });
+            });
+        }
+        
+        // Установка PWA
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+        
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Пользователь установил PWA');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                alert('Для установки откройте меню браузера и выберите "Добавить на главный экран"');
+            }
+        }
+        
+        // Показываем кнопку установки только если поддерживается
+        window.addEventListener('beforeinstallprompt', (e) => {
+            document.querySelector('.install-btn').style.display = 'block';
+        });
+        
+        // Загрузка основного приложения после установки
+        function loadMainApp() {
+            // Здесь будет загружаться основное приложение с жестами
+            document.body.innerHTML = `
+                <div style="display: flex; flex-direction: column; height: 100vh; background: #000; color: white;">
+                    <div style="padding: 20px; text-align: center; background: #8B0000;">
+                        <h1>📸 Flashback</h1>
+                    </div>
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">🎉</div>
+                            <h2>Приложение установлено!</h2>
+                            <p style="margin: 20px 0; opacity: 0.8;">Скоро здесь будут ваши фото с жестовым управлением</p>
+                            <button onclick="location.reload()" style="background: #8B0000; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer;">
+                                Обновить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Проверяем, установлено ли приложение
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            loadMainApp();
+        }
+        
+        // Информация об установке
+        console.log('Flashback PWA готов к установке!');
+    </script>
+</body>
+</html>
